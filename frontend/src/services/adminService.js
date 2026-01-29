@@ -51,6 +51,17 @@ export const addStudent = async (studentData) => {
     return response.data;
 };
 
+/**
+ * Update student details
+ * @param {String} id - Student ID
+ * @param {Object} studentData - { name, email, studentId, phone }
+ * @returns {Promise} Response with updated student
+ */
+export const updateStudent = async (id, studentData) => {
+    const response = await api.put(`/admin/students/${id}`, studentData);
+    return response.data;
+};
+
 // ============================================
 // ROOM ASSIGNMENT
 // ============================================

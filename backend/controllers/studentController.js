@@ -116,11 +116,12 @@ const getAssignedRoom = async (req, res) => {
 const updateProfile = async (req, res) => {
     try {
         const student = req.user;
-        const { name, phone } = req.body;
+        const { name, phone, studentId } = req.body;
 
-        // Only allow updating name and phone
+        // Only allow updating name, phone, and studentId
         if (name) student.name = name;
         if (phone) student.phone = phone;
+        if (studentId) student.studentId = studentId;
 
         await student.save();
 
@@ -140,6 +141,14 @@ const updateProfile = async (req, res) => {
         });
     } catch (error) {
         console.error('Update profile error:', error);
+
+        // Handle duplicate key error
+        if (error.code === 11000) {
+            return res.status(400).json({
+                success: false,
+                message: 'Student ID already exists'
+            });
+        }
 
         res.status(500).json({
             success: false,

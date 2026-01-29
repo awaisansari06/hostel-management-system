@@ -396,11 +396,73 @@ const removeStudentFromRoom = async (req, res) => {
     }
 };
 
+/**
+ * @desc    Update student details
+ * @route   PUT /api/admin/students/:id
+ * @access  Private (Admin only)
+ */
+const updateStudent = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, email, studentId, phone } = req.body;
+
+        // Find student
+        const student = await User.findById(id);
+
+        if (!student) {
+            return res.status(404).json({
+                success: false,
+                message: 'Student not found'
+            });
+        }
+
+        // Update fields if provided
+        if (name) student.name = name;
+        if (email) student.email = email;
+        if (studentId) student.studentId = studentId;
+        if (phone) student.phone = phone;
+
+        await student.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Student updated successfully',
+            data: {
+                student: {
+                    _id: student._id,
+                    name: student.name,
+                    email: student.email,
+                    role: student.role,
+                    studentId: student.studentId,
+                    phone: student.phone,
+                    roomNumber: student.roomNumber
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Update student error:', error);
+
+        // Handle duplicate key error
+        if (error.code === 11000) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email or Student ID already exists'
+            });
+        }
+
+        res.status(500).json({
+            success: false,
+            message: 'Server error while updating student'
+        });
+    }
+};
+
 // Export controller functions
 module.exports = {
     createRoom,
     getAllRooms,
     addStudent,
+    updateStudent,
     getAllStudents,
     assignStudentToRoom,
     removeStudentFromRoom

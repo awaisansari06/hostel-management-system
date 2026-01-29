@@ -5,18 +5,19 @@ import { getMyProfile, updateProfile } from '../../services/studentService';
 import DashboardLayout from '../../components/DashboardLayout';
 import Modal from '../../components/Modal';
 import Skeleton from '../../components/Skeleton';
+import { useToast } from '../../context/ToastContext';
 
 const StudentProfile = () => {
+    const { addToast } = useToast();
     const { user } = useAuth();
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
 
     // Edit Mode State
     const [isEditing, setIsEditing] = useState(false);
     const [editFormData, setEditFormData] = useState({
         name: '',
+        studentId: '',
         phone: ''
     });
     const [updating, setUpdating] = useState(false);
@@ -28,16 +29,16 @@ const StudentProfile = () => {
     const fetchProfile = async () => {
         try {
             setLoading(true);
-            setError('');
             const response = await getMyProfile();
             setProfile(response.data.student);
             setEditFormData({
                 name: response.data.student.name || '',
+                studentId: response.data.student.studentId || '',
                 phone: response.data.student.phone || ''
             });
         } catch (err) {
             console.error('Error fetching profile:', err);
-            setError('Failed to load profile');
+            addToast(err.response?.data?.message || 'Failed to load profile', 'error');
         } finally {
             setLoading(false);
         }
@@ -46,20 +47,15 @@ const StudentProfile = () => {
     const handleUpdate = async (e) => {
         e.preventDefault();
         setUpdating(true);
-        setError('');
-        setSuccess('');
 
         try {
             await updateProfile(editFormData);
-            setSuccess('Profile updated successfully!');
+            addToast('Profile updated successfully!', 'success');
             setIsEditing(false);
             fetchProfile(); // Refresh data
-
-            // Clear success message after 3 seconds
-            setTimeout(() => setSuccess(''), 3000);
         } catch (err) {
             console.error('Error updating profile:', err);
-            setError(err.response?.data?.message || 'Failed to update profile');
+            addToast(err.response?.data?.message || 'Failed to update profile', 'error');
         } finally {
             setUpdating(false);
         }
@@ -107,28 +103,6 @@ const StudentProfile = () => {
                         <span>Edit Profile</span>
                     </button>
                 </div>
-
-                {/* Messages */}
-                {error && (
-                    <div className="mb-6 bg-red-500/10 border border-red-500/50 rounded-lg p-4 animate-slideDown">
-                        <div className="flex items-center">
-                            <svg className="h-5 w-5 text-red-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                            </svg>
-                            <span className="text-sm text-red-200">{error}</span>
-                        </div>
-                    </div>
-                )}
-                {success && (
-                    <div className="mb-6 bg-emerald-500/10 border border-emerald-500/50 rounded-lg p-4 animate-slideDown">
-                        <div className="flex items-center">
-                            <svg className="h-5 w-5 text-emerald-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                            </svg>
-                            <span className="text-sm text-emerald-200">{success}</span>
-                        </div>
-                    </div>
-                )}
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* ID Card Column */}
@@ -256,13 +230,23 @@ const StudentProfile = () => {
                         />
                     </div>
                     <div>
+                        <label className="block text-sm font-medium text-slate-400 mb-1">Student ID</label>
+                        <input
+                            type="text"
+                            value={editFormData.studentId}
+                            onChange={(e) => setEditFormData({ ...editFormData, studentId: e.target.value })}
+                            className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                            placeholder="e.g. 2023-CS-001"
+                        />
+                    </div>
+                    <div>
                         <label className="block text-sm font-medium text-slate-400 mb-1">Phone Number</label>
                         <input
                             type="tel"
                             value={editFormData.phone}
                             onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
                             className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
-                            placeholder="+1 234 567 8900"
+                            placeholder="+91 1234567890"
                         />
                     </div>
                     <div>

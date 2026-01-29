@@ -10,6 +10,7 @@ const {
     createRoom,
     getAllRooms,
     addStudent,
+    updateStudent,
     getAllStudents,
     assignStudentToRoom,
     removeStudentFromRoom
@@ -50,6 +51,14 @@ router.get('/rooms', getAllRooms);
  * @body    { name, email, password, studentId?, phone? }
  */
 router.post('/students', addStudent);
+
+/**
+ * @route   PUT /api/admin/students/:id
+ * @desc    Update student details
+ * @access  Private (Admin only)
+ * @body    { name?, email?, studentId?, phone? }
+ */
+router.put('/students/:id', updateStudent);
 
 /**
  * @route   GET /api/admin/students
